@@ -1,9 +1,8 @@
 @extends('layouts.master')
-@section('title', 'welcome')
+@section('title', 'Home - Online Store')
 @section('content')
-    <div class="card m-4">
-        <div class="card-body">
-        Welcome to Home Page
-        </div>
- </div>
+    <div class="container mt-5 mb-5">
+        <h1 class="text-center">Welcome to Our Online Store</h1>
+        <p class="text-center lead">Discover a wide range of products and start shopping today!</p>
+    </div>
 @endsection
