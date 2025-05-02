@@ -44,27 +44,27 @@ class UsersController extends Controller
         $user->save();
 
 
-        // $title = "Verification Link";
-        // $token = Crypt::encryptString(json_encode(['id' => $user->id, 'email' => $user->email]));
-        // $link = route("verify", ['token' => $token]);
-        // Mail::to($user->email)->send(new VerificationEmail($link, $user->name));
+        $title = "Verification Link";
+        $token = Crypt::encryptString(json_encode(['id' => $user->id, 'email' => $user->email]));
+        $link = route("verify", ['token' => $token]);
+        Mail::to($user->email)->send(new VerificationEmail($link, $user->name));
 
         return redirect("/");
     }
 
-    // public function verify(Request $request) {
-    //     try {
-    //         $decryptedData = json_decode(Crypt::decryptString($request->token), true);
-    //         $user = User::find($decryptedData['id']);
-    //         if(!$user) abort(401);
-    //         $user->email_verified_at = Carbon::now();
-    //         $user->save();
+    public function verify(Request $request) {
+        try {
+            $decryptedData = json_decode(Crypt::decryptString($request->token), true);
+            $user = User::find($decryptedData['id']);
+            if(!$user) abort(401);
+            $user->email_verified_at = Carbon::now();
+            $user->save();
             
-    //         return view('users.verified', compact('user'));
-    //     } catch (DecryptException $e) {
-    //         return redirect('/')->withErrors(['message' => 'Invalid or expired verification link.']);
-    //     }
-    // }
+            return view('emails.verified', compact('user'));
+        } catch (DecryptException $e) {
+            return redirect('/')->withErrors(['message' => 'Invalid or expired verification link.']);
+        }
+    }
 
     public function login(Request $request) {
     return view('users.login');
@@ -78,9 +78,9 @@ class UsersController extends Controller
             return redirect()->back()->withInput($request->input())
                 ->withErrors('No email found.');
 
-        // if(!$user->email_verified_at)
-        //     return redirect()->back()->withInput($request->input())
-        //         ->withErrors('Your email is not verified.');
+        if(!$user->email_verified_at)
+            return redirect()->back()->withInput($request->input())
+                ->withErrors('Your email is not verified.');
 
         if(!Auth::attempt(['email' => $request->email, 'password' => $request->password]))
             return redirect()->back()->withInput($request->input())->withErrors('Invalid login information.');
