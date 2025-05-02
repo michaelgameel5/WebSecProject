@@ -1,8 +1,6 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UsersController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -11,24 +9,10 @@ use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Mail\VerificationEmail;
 use App\Http\Controllers\Auth\AuthController;
 
-Route::resource('products', ProductController::class);
 
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', function () {
-        return view('users.profile');
-    })->name('profile');
-    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
 
 
 Route::get('register', [UsersController::class, 'register'])->name('register');
