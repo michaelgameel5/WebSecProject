@@ -1,30 +1,33 @@
 @extends('layouts.master')
-@section('title', 'Login')
+@section('title', 'Login Page')
 @section('content')
-<div class="container mt-5">
-    <h2 class="text-center">Login</h2>
-
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+    <form action="{{route('do_login')}}" method="post">
+        {{ csrf_field() }}
         <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" name="email" id="email" class="form-control" required>
+            @foreach($errors->all() as $error)
+                <div class="alert alert-danger">
+                    <strong>Error!</strong> {{$error}}
+                </div>
+            @endforeach
         </div>
-        <div class="form-group mt-3">
-            <label for="password">Password:</label>
-            <input type="password" name="password" id="password" class="form-control" required>
+        <div class="form-group mb-2">
+            <label for="model" class="form-label">Email:</label>
+            <input type="email" class="form-control" placeholder="email" name="email" required>
         </div>
-        <button type="submit" class="btn btn-primary mt-4">Login</button>
+        <div class="form-group mb-2">
+            <label for="model" class="form-label">Password:</label>
+            <input type="password" class="form-control" placeholder="password" name="password" required>
+        </div>
+        <div class="form-group mb-2">
+            <button type="submit" class="btn btn-primary">Login</button>
+            {{-- <a href="{{route('login_with_google')}}" class="btn btn-success">Login with Google</a> --}}
+        </div>
+        {{-- <div class="form-group mb-2">
+            <a href="{{ route('register') }}" class="btn btn-secondary">Register</a>
+        </div> --}}
+        <div class="form-group mb-2">
+            <a href="{{ route('forgot_password') }}" class="btn btn-link">Forgot Password?</a>
+        </div>
     </form>
-</div>
 @endsection
+
