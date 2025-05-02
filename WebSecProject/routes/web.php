@@ -16,4 +16,7 @@ Route::post('login', [UsersController::class, 'doLogin'])->name('do_login');
 Route::get('logout', [UsersController::class, 'doLogout'])->name('do_logout');
 Route::get('profile', [UsersController::class, 'profile'])->name('profile');
 
+Route::get('verify', [UsersController::class, 'verify'])->name('verify');
+
+
 
