@@ -14,10 +14,12 @@ class Product extends Model
         'description',
         'price',
         'stock',
-        'photo'
+        'image',
+        'is_active'
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'is_active' => 'boolean',
     ];
 }
