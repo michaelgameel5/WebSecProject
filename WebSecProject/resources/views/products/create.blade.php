@@ -34,9 +34,9 @@
                 @enderror
             </div>
             <div class="mb-4">
-                <label for="image" class="block text-sm font-medium text-gray-700">Image</label>
-                <input type="file" name="image" id="image" class="mt-1 block w-full">
-                @error('image')
+                <label for="photo" class="block text-sm font-medium text-gray-700">Photo</label>
+                <input type="file" name="photo" id="photo" class="mt-1 block w-full">
+                @error('photo')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>

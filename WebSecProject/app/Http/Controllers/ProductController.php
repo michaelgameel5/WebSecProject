@@ -3,16 +3,36 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Comment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
     /**
      * Display a listing of the products.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::latest()->paginate(10);
+        $query = Product::query();
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                  ->orWhere('description', 'like', "%$search%") ;
+            });
+        }
+
+        // Sorting
+        if ($request->filled('sort') && in_array($request->input('sort'), ['asc', 'desc'])) {
+            $query->orderBy('price', $request->input('sort'));
+        } else {
+            $query->latest();
+        }
+
+        $products = $query->paginate(10)->appends($request->all());
         return view('products.index', compact('products'));
     }
 
@@ -34,13 +54,13 @@ class ProductController extends Controller
             'description' => 'nullable',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'boolean'
         ]);
 
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'public');
-            $validated['image'] = $imagePath;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('products', 'public');
+            $validated['photo'] = $photoPath;
         }
 
         Product::create($validated);
@@ -54,6 +74,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
+        $product->load(['comments.user']);
         return view('products.show', compact('product'));
     }
 
@@ -75,13 +96,13 @@ class ProductController extends Controller
             'description' => 'nullable',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'boolean'
         ]);
 
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('products', 'public');
-            $validated['image'] = $imagePath;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('products', 'public');
+            $validated['photo'] = $photoPath;
         }
 
         $product->update($validated);
@@ -99,5 +120,18 @@ class ProductController extends Controller
 
         return redirect()->route('products.index')
             ->with('success', 'Product deleted successfully.');
+    }
+
+    public function addComment(Request $request, Product $product)
+    {
+        $request->validate([
+            'content' => 'required|string|max:1000',
+        ]);
+        $comment = new Comment([
+            'content' => $request->input('content'),
+            'user_id' => Auth::id(),
+        ]);
+        $product->comments()->save($comment);
+        return redirect()->route('products.show', $product)->with('success', 'Comment added!');
     }
 }

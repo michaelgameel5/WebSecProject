@@ -35,24 +35,14 @@
                 @enderror
             </div>
             <div class="mb-4">
-                <label for="image" class="block text-sm font-medium text-gray-700">Image</label>
-                @if($product->image)
+                <label for="photo" class="block text-sm font-medium text-gray-700">Photo</label>
+                @if($product->photo)
                     <div class="mt-2">
-                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="h-32 w-32 object-cover rounded-lg">
+                        <img src="{{ asset('storage/' . $product->photo) }}" alt="{{ $product->name }}" class="h-32 w-32 object-cover rounded-lg">
                     </div>
                 @endif
-                <input type="file" name="image" id="image" class="mt-1 block w-full">
-                @error('image')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
-            <div class="mb-4">
-                <label for="is_active" class="block text-sm font-medium text-gray-700">Status</label>
-                <select name="is_active" id="is_active" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="1" {{ old('is_active', $product->is_active) ? 'selected' : '' }}>Active</option>
-                    <option value="0" {{ old('is_active', $product->is_active) === '0' ? 'selected' : '' }}>Inactive</option>
-                </select>
-                @error('is_active')
+                <input type="file" name="photo" id="photo" class="mt-1 block w-full">
+                @error('photo')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>

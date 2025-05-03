@@ -14,7 +14,7 @@ class Product extends Model
         'description',
         'price',
         'stock',
-        'image',
+        'photo',
         'is_active'
     ];
 
@@ -22,4 +22,9 @@ class Product extends Model
         'price' => 'decimal:2',
         'is_active' => 'boolean',
     ];
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
 }

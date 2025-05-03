@@ -10,6 +10,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Mail\VerificationEmail;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\EmailVerificationNotificationController;
+use App\Http\Controllers\Auth\PasswordController;
 
 Route::resource('products', ProductController::class);
 
@@ -22,7 +24,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
@@ -33,5 +35,13 @@ Route::post('login', [UsersController::class, 'doLogin']);
 Route::get('register', [UsersController::class, 'register'])->name('register');
 Route::post('register', [UsersController::class, 'doRegister'])->name('do_register');
 Route::post('logout', [UsersController::class, 'doLogout'])->name('do_logout');
+
+Route::post('/products/{product}/comments', [ProductController::class, 'addComment'])->name('products.addComment');
+
+Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+    ->middleware('throttle:6,1')
+    ->name('verification.send');
+
+Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 
 
