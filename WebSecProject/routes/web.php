@@ -31,7 +31,7 @@ Route::middleware('auth')->group(function () {
 
 // Custom authentication routes
 Route::get('login', [UsersController::class, 'login'])->name('login');
-Route::post('login', [UsersController::class, 'doLogin']);
+Route::post('login', [UsersController::class, 'doLogin'])->name('do_login');
 Route::get('register', [UsersController::class, 'register'])->name('register');
 Route::post('register', [UsersController::class, 'doRegister'])->name('do_register');
 Route::post('logout', [UsersController::class, 'doLogout'])->name('do_logout');
@@ -43,5 +43,8 @@ Route::post('email/verification-notification', [EmailVerificationNotificationCon
     ->name('verification.send');
 
 Route::put('password', [PasswordController::class, 'update'])->name('password.update');
+
+Route::get('forgot-password', [UsersController::class, 'showForgotPasswordForm'])->name('forgot_password');
+Route::post('forgot-password', [UsersController::class, 'sendResetLink'])->name('forgot_password.send');
 
 
