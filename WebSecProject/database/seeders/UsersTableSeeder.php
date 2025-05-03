@@ -22,6 +22,7 @@ class UsersTableSeeder extends Seeder
                 'google_id' => null,
                 'google_token' => null,
                 'google_refresh_token' => null,
+                'credit' => 100000.00, // Add credit field
             ],
             [
                 'name' => 'Jane Smith',
@@ -34,6 +35,7 @@ class UsersTableSeeder extends Seeder
                 'google_id' => '1234567890',
                 'google_token' => 'abcde12345',
                 'google_refresh_token' => 'fghij67890',
+                'credit' => 200000.00, // Add credit field
             ],
             [
                 'name' => 'Alice Johnson',
@@ -46,6 +48,7 @@ class UsersTableSeeder extends Seeder
                 'google_id' => null,
                 'google_token' => null,
                 'google_refresh_token' => null,
+                'credit' => 150000.00, // Add credit field
             ],
         ];
 
