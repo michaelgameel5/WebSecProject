@@ -5,30 +5,28 @@ use Illuminate\Support\Facades\Auth;
 use DB;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Auth\Events\Registered;
 use App\Http\Controllers\Web\Artisan;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerificationEmail;
 use Carbon\Carbon;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Log;
 
 class UsersController extends Controller
 {
     use ValidatesRequests;
 
-
     public function register(Request $request) {
         return view('users.register');
-        }
+    }
 
     public function doRegister(Request $request) {
-
         $this->validate($request, [
             'name' => ['required', 'string', 'min:5'],
             'email' => ['required', 'email', 'unique:users'],
@@ -36,18 +34,17 @@ class UsersController extends Controller
             Password::min(8)->numbers()->letters()->mixedCase()->symbols()]
         ]);
 
-
         $user = new User();
         $user->name = $request->name;
         $user->email = $request->email;
         $user->password = bcrypt($request->password);  
+        // Automatically verify email
+        $user->email_verified_at = now();
         $user->save();
 
-
-        $title = "Verification Link";
-        $token = Crypt::encryptString(json_encode(['id' => $user->id, 'email' => $user->email]));
-        $link = route("verify", ['token' => $token]);
-        Mail::to($user->email)->send(new VerificationEmail($link, $user->name));
+        // Assign default user role
+        $userRole = Role::firstOrCreate(['name' => 'user']);
+        $user->roles()->attach($userRole->id);
 
         return redirect("/");
     }
@@ -67,44 +64,59 @@ class UsersController extends Controller
     }
 
     public function login(Request $request) {
-    return view('users.login');
+        return view('users.login');
     }
 
     public function doLogin(Request $request) {
-
         $user = User::where('email', $request->email)->first();
 
         if(!$user)
             return redirect()->back()->withInput($request->input())
                 ->withErrors('No email found.');
 
-        if(!$user->email_verified_at)
-            return redirect()->back()->withInput($request->input())
-                ->withErrors('Your email is not verified.');
-
         if(!Auth::attempt(['email' => $request->email, 'password' => $request->password]))
             return redirect()->back()->withInput($request->input())->withErrors('Invalid login information.');
             $user = User::where('email', $request->email)->first();
             Auth::setUser($user);
         
-    return redirect('/');
+        return redirect('/');
     }
 
     public function doLogout(Request $request) {
-
         Auth::logout();
-
-    return redirect('/');
+        return redirect('/');
     }
 
     public function profile(Request $request, User $user = null) {
-        $user = $user ?? auth()->user();
+        $user = $user ?? Auth::user();
     
         // Authorization Check
-        if (auth()->id() !== $user?->id && !auth()->user()->hasPermissionTo('show_users')) {
+        if (Auth::id() !== $user?->id && !Auth::user()->isEmployee()) {
             abort(401);
         }
     
         return view('users.profile', compact('user'));
+    }
+
+    public function resendVerification(Request $request)
+    {
+        if ($request->user()->hasVerifiedEmail()) {
+            return redirect()->route('home')->with('status', 'Email already verified.');
+        }
+
+        try {
+            $request->user()->sendEmailVerificationNotification();
+            $request->user()->update(['verification_sent_at' => now()]);
+            
+            return back()->with('status', 'Verification link has been resent to your email address.');
+        } catch (\Exception $e) {
+            Log::error('Failed to send verification email', [
+                'user_id' => $request->user()->id,
+                'email' => $request->user()->email,
+                'error' => $e->getMessage()
+            ]);
+            
+            return back()->with('error', 'Failed to send verification email. Please try again later or contact support.');
+        }
     }
 }

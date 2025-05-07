@@ -121,13 +121,52 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('products.index') }}">
+                            <a class="nav-link {{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index') }}">
                                 <i class="fas fa-box me-1"></i>Products
                             </a>
                         </li>
+                        @role('employee')
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('vouchers.*') ? 'active' : '' }}" href="{{ route('vouchers.index') }}">
+                                    <i class="fas fa-ticket-alt me-1"></i>Vouchers
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('cards.credit-requests') ? 'active' : '' }}" href="{{ route('cards.credit-requests') }}">
+                                    <i class="fas fa-credit-card me-1"></i>Credit Requests
+                                </a>
+                            </li>
+                        @endrole
+                        @auth
+                            @unlessrole('employee')
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('cart.index') }}">
+                                        <i class="fas fa-shopping-cart me-1"></i>Cart
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {{ request()->routeIs('cards.*') ? 'active' : '' }}" href="{{ route('cards.index') }}">
+                                        <i class="fas fa-credit-card me-1"></i>My Cards
+                                    </a>
+                                </li>
+                            @endunlessrole
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('purchases.index') }}">
+                                    <i class="fas fa-history me-1"></i>Purchase History
+                                </a>
+                            </li>
+                        @endauth
                     </ul>
                     <ul class="navbar-nav">
                         @auth
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('notifications.index') }}">
+                                    <i class="fas fa-bell me-1"></i>
+                                    @if(auth()->user()->unreadNotifications->count() > 0)
+                                        <span class="badge bg-danger">{{ auth()->user()->unreadNotifications->count() }}</span>
+                                    @endif
+                                </a>
+                            </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('profile') }}">
                                     <i class="fas fa-user me-1"></i>{{ auth()->user()->name }}
