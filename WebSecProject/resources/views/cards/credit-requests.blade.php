@@ -34,7 +34,13 @@
                         @forelse($creditRequests as $request)
                             <tr>
                                 <td>{{ $request->user->name }}</td>
-                                <td>**** **** **** {{ substr($request->card->card_number, -4) }}</td>
+                                <td>
+                                    @if($request->card)
+                                        **** **** **** {{ substr($request->card->card_number, -4) }}
+                                    @else
+                                        Paid with Credits
+                                    @endif
+                                </td>
                                 <td>${{ number_format($request->amount, 2) }}</td>
                                 <td>
                                     @if($request->status === 'pending')

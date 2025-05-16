@@ -44,13 +44,11 @@ class User extends Authenticatable
     public function hasRole($roleName)
     {
         if ($this->roles->isEmpty()) {
-            // Cache the roles if you expect multiple role checks
             $this->load('roles');
         }
-    
         return $this->roles()->where('name', $roleName)->exists();
     }
-    
+
     public function isAdmin()
     {
         return $this->hasRole('admin');

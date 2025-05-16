@@ -22,7 +22,7 @@
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Card</th>
+                                {{-- <th>Card</th> --}}
                                 <th>Items</th>
                                 <th>Total</th>
                                 <th>Status</th>
@@ -33,7 +33,13 @@
                             @foreach($purchases as $purchase)
                                 <tr>
                                     <td>{{ $purchase->created_at->format('M d, Y H:i') }}</td>
-                                    <td>**** **** **** {{ substr($purchase->card->card_number, -4) }}</td>
+                                    {{-- <td>
+                                        @if($purchase->card)
+                                            **** **** **** {{ substr($purchase->card->card_number, -4) }}
+                                        @else
+                                            Paid with Credits
+                                        @endif
+                                    </td> --}}
                                     <td>{{ $purchase->items->sum('quantity') }} items</td>
                                     <td>
                                         @if($purchase->voucher_discount > 0)

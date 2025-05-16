@@ -73,54 +73,20 @@
                         <h5 class="card-title">Order Summary</h5>
                         
                         <!-- Voucher Form -->
-                        <form action="{{ route('cart.apply_voucher') }}" method="POST" class="mb-3">
-                            @csrf
-                            <div class="input-group">
-                                <input type="text" name="voucher_code" class="form-control" placeholder="Enter voucher code">
-                                <button type="submit" class="btn btn-outline-primary">Apply</button>
-                            </div>
-                        </form>
+                       
 
-                        <div class="d-flex justify-content-between mb-3">
+                        <div class="d-flex justify-content-between mb-2">
                             <span>Subtotal:</span>
-                            <span>${{ number_format($total / 100, 2) }}</span>
+                            <span>${{ number_format($items->sum(function($item) { return $item->quantity * $item->product->price; }) / 100, 2) }}</span>
                         </div>
-
-                        @if(session('applied_voucher'))
-                            @php
-                                $voucher = session('applied_voucher');
-                                $discountAmount = ($total * $voucher->discount_percentage) / 100;
-                            @endphp
-                            <div class="d-flex justify-content-between mb-3 text-success">
-                                <span>Voucher Discount ({{ $voucher->discount_percentage }}%):</span>
-                                <span>-${{ number_format($discountAmount / 100, 2) }}</span>
-                            </div>
-                        @endif
-
                         <hr>
                         <div class="d-flex justify-content-between mb-3">
                             <strong>Total:</strong>
-                            <strong>${{ number_format(($total - (session('applied_voucher') ? ($total * session('applied_voucher')->discount_percentage / 100) : 0)) / 100, 2) }}</strong>
+                            <strong>${{ number_format($items->sum(function($item) { return $item->quantity * $item->product->price; }) / 100, 2) }}</strong>
                         </div>
-
-                        <!-- Checkout Form -->
                         <form action="{{ route('cart.checkout') }}" method="POST">
                             @csrf
-                            <div class="mb-3">
-                                <label for="card_id" class="form-label">Select Payment Card:</label>
-                                <select name="card_id" id="card_id" class="form-select" required>
-                                    <option value="">Choose a card...</option>
-                                    @foreach($cards as $card)
-                                        <option value="{{ $card->id }}">
-                                            Card ending in {{ substr($card->card_number, -4) }} 
-                                            (Balance: ${{ number_format($card->credit_balance, 2) }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="fas fa-lock me-2"></i>Proceed to Checkout
-                            </button>
+                            <button type="submit" class="btn btn-primary w-100">Proceed to Checkout</button>
                         </form>
                     </div>
                 </div>

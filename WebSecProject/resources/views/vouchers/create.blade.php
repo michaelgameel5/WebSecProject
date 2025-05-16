@@ -22,7 +22,7 @@
                         <div class="mb-3">
                             <label for="code" class="form-label">Voucher Code</label>
                             <input type="text" class="form-control @error('code') is-invalid @enderror" 
-                                   id="code" name="code" value="{{ old('code') }}" required>
+                                   id="code" name="code" value="{{ old('code', $voucherCode) }}" required>
                             @error('code')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

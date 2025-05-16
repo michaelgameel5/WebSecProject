@@ -35,12 +35,23 @@ Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('do_reset_password');
 
 // Employee routes (no verification needed)
-Route::middleware(['auth', \App\Http\Middleware\EmployeeMiddleware::class])->group(function () {
+Route::middleware(['auth', 'employee'])->group(function () {
     // Product management
     Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
     Route::post('/products', [ProductController::class, 'store'])->name('products.store');
     Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
     Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+    
+    // User management
+    Route::get('/users', [UsersController::class, 'index'])->name('users.index');
+    Route::get('/users/{user}/edit', [UsersController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [UsersController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('users.destroy');
+    Route::get('/users/{user}/add-credit', [UsersController::class, 'addCredit'])->name('users.add-credit');
+    Route::post('/users/{user}/add-credit', [UsersController::class, 'storeCredit'])->name('users.store-credit');
+    
+    // Product deletion
+    Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
 });
 
 // Authenticated routes
@@ -78,44 +89,81 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/cards/credit-requests', [CardController::class, 'creditRequests'])->name('cards.credit-requests');
         Route::post('/cards/credit-requests/{creditRequest}/approve', [CardController::class, 'approveCredit'])->name('cards.approve-credit');
         Route::post('/cards/credit-requests/{creditRequest}/reject', [CardController::class, 'rejectCredit'])->name('cards.reject-credit');
-
-        // Purchase History routes
-        Route::get('/purchases', [PurchaseController::class, 'index'])->name('purchases.index');
-        Route::get('/purchases/{purchase}', [PurchaseController::class, 'show'])->name('purchases.show');
+        Route::post('/credits/request', [CardController::class, 'requestGeneralCredit'])->name('credits.request-credit');
 
         // Notification routes
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
-        // Customer voucher routes
-        Route::get('/vouchers/{voucher}', [VoucherController::class, 'show'])->name('vouchers.show');
-    });
-
-    // Voucher routes (employee only)
-    Route::middleware(['auth', \App\Http\Middleware\EmployeeMiddleware::class])->group(function () {
-        Route::get('/vouchers', [VoucherController::class, 'index'])->name('vouchers.index');
-        Route::get('/vouchers/create', [VoucherController::class, 'create'])->name('vouchers.create');
-        Route::post('/vouchers', [VoucherController::class, 'store'])->name('vouchers.store');
-        Route::get('/vouchers/{voucher}/edit', [VoucherController::class, 'edit'])->name('vouchers.edit');
-        Route::put('/vouchers/{voucher}', [VoucherController::class, 'update'])->name('vouchers.update');
-        Route::delete('/vouchers/{voucher}', [VoucherController::class, 'destroy'])->name('vouchers.destroy');
-        Route::post('/vouchers/{voucher}/send', [VoucherController::class, 'send'])->name('vouchers.send');
+        // Purchase History routes
+        Route::get('/purchases', [PurchaseController::class, 'index'])->name('purchases.index');
+        Route::get('/purchases/{purchase}', [PurchaseController::class, 'show'])->name('purchases.show');
     });
 });
 
-// Admin routes
-Route::middleware(['auth', \App\Http\Middleware\EmployeeMiddleware::class])->group(function () {
-    // Product deletion
-    Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+// Temporary route to assign employee role
+Route::get('/assign-employee-role', function () {
+    $employeeRole = \App\Models\Role::firstOrCreate(['name' => 'employee']);
+    $user = auth()->user();
     
-    // User management
-    Route::get('/users', [UsersController::class, 'index'])->name('users.index');
-    Route::get('/users/{user}/edit', [UsersController::class, 'edit'])->name('users.edit');
-    Route::put('/users/{user}', [UsersController::class, 'update'])->name('users.update');
-    Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('users.destroy');
+    if ($user) {
+        $user->roles()->syncWithoutDetaching([$employeeRole->id]);
+        return 'Employee role assigned successfully to: ' . $user->email;
+    }
     
-    // Voucher deletion
-    Route::delete('/vouchers/{voucher}', [VoucherController::class, 'destroy'])->name('vouchers.destroy');
-});
+    return 'No user logged in';
+})->middleware('auth');
+
+// Temporary route to set up roles
+Route::get('/setup-roles', function () {
+    // Create roles
+    $employeeRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'employee']);
+    $customerRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'customer']);
+    $adminRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
+
+    // Create permissions
+    $permissions = [
+        'manage products',
+        'manage vouchers',
+        'manage users',
+        'manage credit requests',
+        'view products',
+        'view vouchers',
+        'view purchase history',
+        'manage cards',
+    ];
+
+    foreach ($permissions as $permission) {
+        \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $permission]);
+    }
+
+    // Assign permissions to roles
+    $employeeRole->syncPermissions([
+        'manage products',
+        'manage vouchers',
+        'manage credit requests',
+        'view products',
+        'view vouchers',
+        'view purchase history',
+    ]);
+
+    $adminRole->syncPermissions($permissions);
+
+    $customerRole->syncPermissions([
+        'view products',
+        'view vouchers',
+        'view purchase history',
+        'manage cards',
+    ]);
+
+    // Assign employee role to current user
+    $user = auth()->user();
+    if ($user) {
+        $user->assignRole($employeeRole);
+        return 'Roles and permissions set up successfully. Employee role assigned to: ' . $user->email;
+    }
+
+    return 'Roles and permissions set up successfully. No user logged in.';
+})->middleware('auth');
 
 

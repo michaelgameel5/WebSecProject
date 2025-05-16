@@ -6,7 +6,6 @@
     <div class="card">
         <div class="card-body">
             <ul class="list-group list-group-flush">
-                <li class="list-group-item"><strong>ID:</strong> {{ $user->id }}</li>
                 <li class="list-group-item"><strong>Name:</strong> {{ $user->name }}</li>
                 <li class="list-group-item"><strong>Email:</strong> {{ $user->email }}</li>
                 <li class="list-group-item">
@@ -19,11 +18,9 @@
                 </li>
                 @if($user->isCustomer())
                     <li class="list-group-item">
-                        <strong><i class="fas fa-credit-card me-2"></i>Credit Card:</strong>
+                        <strong><i class="fas fa-money-bill-wave me-2"></i>Total Credit Balance:</strong>
                         <div class="mt-2">
-                            <a href="{{ route('cards.index') }}" class="btn btn-outline-primary">
-                                <i class="fas fa-credit-card me-1"></i>Manage Cards
-                            </a>
+                            <p class="mb-0">${{ number_format($user->credit, 2) }}</p>
                         </div>
                     </li>
                 @endif

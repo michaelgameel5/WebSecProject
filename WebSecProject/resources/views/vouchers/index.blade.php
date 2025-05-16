@@ -2,14 +2,16 @@
 @section('title', 'Vouchers')
 @section('content')
 <div class="container">
+    <div class="text-center my-4">
+        <a href="{{ route('vouchers.create') }}" class="btn btn-lg btn-success">
+            <i class="fas fa-plus me-1"></i> Add a New Voucher
+        </a>
+    </div>
     <div class="row justify-content-center">
         <div class="col-md-10">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Vouchers</h4>
-                    <a href="{{ route('vouchers.create') }}" class="btn btn-primary">
-                        <i class="fas fa-plus me-1"></i>Create New Voucher
-                    </a>
                 </div>
                 <div class="card-body">
                     @if($vouchers->isEmpty())

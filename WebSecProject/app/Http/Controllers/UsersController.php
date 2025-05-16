@@ -119,4 +119,48 @@ class UsersController extends Controller
             return back()->with('error', 'Failed to send verification email. Please try again later or contact support.');
         }
     }
+
+    public function index()
+    {
+        $users = \App\Models\User::whereHas('roles', function($query) {
+            $query->where('name', 'customer');
+        })->get();
+        return view('users.index', compact('users'));
+    }
+
+    public function addCredit(User $user)
+    {
+        // Logic to add credit to the user
+        // For example, you might want to show a form or directly add credit
+        return view('users.add-credit', compact('user'));
+    }
+
+    public function storeCredit(Request $request, User $user)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        // Logic to store the credit added to the user
+        // For example, you might want to update the user's credit balance
+        $user->credit += $request->amount;
+        $user->save();
+
+        return redirect()->route('users.index')->with('success', 'Credit added successfully.');
+    }
+
+    public function edit(User $user)
+    {
+        return view('users.edit', compact('user'));
+    }
+
+    public function update(Request $request, User $user)
+    {
+        $request->validate([
+            'name' => 'required|string|min:2',
+        ]);
+        $user->name = $request->name;
+        $user->save();
+        return redirect()->route('users.index')->with('success', 'User name updated successfully.');
+    }
 }

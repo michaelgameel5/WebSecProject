@@ -10,7 +10,12 @@ class EmployeeMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!Auth::check() || !Auth::user()->isEmployee()) {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $user = Auth::user();
+        if (!$user->hasRole('employee')) {
             return redirect()->route('home')->with('error', 'Unauthorized access');
         }
 

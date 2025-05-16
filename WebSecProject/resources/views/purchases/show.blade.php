@@ -50,7 +50,12 @@
                     </div>
                     <div class="mb-3">
                         <strong>Payment Method:</strong><br>
-                        Card ending in {{ substr($purchase->card->card_number, -4) }}
+                        Card ending in
+                        @if($purchase->card)
+                            {{ substr($purchase->card->card_number, -4) }}
+                        @else
+                            Paid with Credits
+                        @endif
                     </div>
                     <div class="mb-3">
                         <strong>Status:</strong><br>

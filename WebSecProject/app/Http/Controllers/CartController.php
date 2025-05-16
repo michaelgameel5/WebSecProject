@@ -114,56 +114,35 @@ class CartController extends Controller
 
     public function checkout(Request $request)
     {
-        $validated = $request->validate([
-            'card_id' => 'required|exists:cards,id'
-        ]);
-
-        $cart = Cart::where('user_id', Auth::id())->first();
-        if (!$cart || $cart->items()->count() === 0) {
-            return back()->with('error', 'Cart is empty');
-        }
-
-        $card = Card::findOrFail($validated['card_id']);
-        if ($card->user_id !== Auth::id()) {
-            return back()->with('error', 'Unauthorized action');
-        }
-
-        $total = $cart->items->sum(function ($item) {
-            return $item->quantity * $item->product->price;
-        });
-
-        $voucherDiscount = 0;
-        // Apply voucher discount if exists
-        if ($voucher = session('applied_voucher')) {
-            // Calculate discount based on percentage
-            $voucherDiscount = ($total * $voucher->discount_percentage) / 100;
-            $total -= $voucherDiscount;
-            $voucher->update(['is_used' => true]);
-            session()->forget('applied_voucher');
-        }
-
-        // Convert total to dollars (divide by 100)
+        $user = Auth::user();
+        $total = $this->calculateTotal($user);
+        
+        // Convert total from cents to dollars
         $totalInDollars = $total / 100;
-        $voucherDiscountInDollars = $voucherDiscount / 100;
 
-        if ($card->credit_balance < $totalInDollars) {
-            return back()->with('error', 'Insufficient balance');
+        // Deduct the total amount from the user's credits
+        if ($user->credit < $totalInDollars) {
+            return redirect()->route('cart.index')->with('error', 'Insufficient credit balance.');
         }
 
+        $user->credit -= $totalInDollars;
+        $user->save();
+
+        // Create purchase record
         try {
             DB::beginTransaction();
 
-            // Create purchase record
             $purchase = Purchase::create([
-                'user_id' => Auth::id(),
-                'card_id' => $card->id,
-                'total_amount' => ($total + $voucherDiscount) / 100,
-                'voucher_discount' => $voucherDiscountInDollars,
-                'final_amount' => $totalInDollars,
-                'status' => 'completed'
+                'user_id' => $user->id,
+                'total_amount' => $totalInDollars,
+                'status' => 'completed',
+                'card_id' => null,
+                'voucher_discount' => 0,
+                'final_amount' => $totalInDollars
             ]);
 
             // Create purchase items
+            $cart = Cart::where('user_id', $user->id)->first();
             foreach ($cart->items as $item) {
                 $purchase->items()->create([
                     'product_id' => $item->product_id,
@@ -173,20 +152,36 @@ class CartController extends Controller
                 ]);
             }
 
-            // Deduct from card balance
-            $card->update([
-                'credit_balance' => $card->credit_balance - $totalInDollars
-            ]);
-
             // Clear the cart
             $cart->items()->delete();
 
             DB::commit();
-            return redirect()->route('purchases.index')
-                           ->with('success', 'Purchase completed successfully');
+            return redirect()->route('purchases.index')->with('success', 'Checkout completed successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Error processing purchase: ' . $e->getMessage());
         }
+    }
+
+    private function calculateTotal($user)
+    {
+        $cart = Cart::where('user_id', $user->id)->first();
+        if (!$cart || $cart->items()->count() === 0) {
+            return 0;
+        }
+
+        $total = $cart->items->sum(function ($item) {
+            return $item->quantity * $item->product->price;
+        });
+
+        // Apply voucher discount if exists
+        if ($voucher = session('applied_voucher')) {
+            $voucherDiscount = ($total * $voucher->discount_percentage) / 100;
+            $total -= $voucherDiscount;
+            $voucher->update(['is_used' => true]);
+            session()->forget('applied_voucher');
+        }
+
+        return $total;
     }
 } 

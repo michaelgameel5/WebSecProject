@@ -192,4 +192,28 @@ class CardController extends Controller
         return redirect()->route('cards.credit-requests')
             ->with('success', 'Credit request rejected successfully.');
     }
+
+    public function requestGeneralCredit(Request $request)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:1'
+        ]);
+
+        $card = Card::where('user_id', auth()->id())
+                    ->where('is_active', true)
+                    ->first();
+
+        if (!$card) {
+            return redirect()->route('cards.index')->with('error', 'No active card found. Please add a card first.');
+        }
+
+        \App\Models\CreditRequest::create([
+            'user_id' => auth()->id(),
+            'card_id' => $card->id,
+            'amount' => $request->amount,
+            'status' => 'pending'
+        ]);
+
+        return redirect()->route('cards.index')->with('success', 'Credit request submitted successfully.');
+    }
 } 

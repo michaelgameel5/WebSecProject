@@ -22,7 +22,8 @@ class VoucherController extends Controller
     public function create()
     {
         $customers = User::where('is_employee', false)->get();
-        return view('vouchers.create', compact('customers'));
+        $voucherCode = Str::random(8); // Generate a unique voucher code
+        return view('vouchers.create', compact('customers', 'voucherCode'));
     }
 
     public function store(Request $request)
