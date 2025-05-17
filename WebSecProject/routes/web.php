@@ -38,3 +38,5 @@ Route::post('/products/{product}/comments', [CommentController::class, 'store'])
 Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
 
+Route::get('/auth/google', [UsersController::class, 'redirectToGoogle'])->name('login_with_google');
+Route::get('/auth/google/callback', [UsersController::class, 'handleGoogleCallback']);
