@@ -107,4 +107,36 @@ class UsersController extends Controller
     
         return view('users.profile', compact('user'));
     }
+
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+
+    public function handleGoogleCallback()
+    {
+        try {
+            $googleUser = Socialite::driver('google')->stateless()->user();
+
+            // Find or create user
+            $user = User::firstOrCreate(
+                ['email' => $googleUser->getEmail()],
+                [
+                    'name' => $googleUser->getName(),
+                    'email_verified_at' => now(),
+                    'google_id' => $googleUser->getId(),
+                    'google_token' => $googleUser->token,
+                    'google_refresh_token' => $googleUser->refreshToken,
+                    'password' => bcrypt(uniqid()), // random password
+                ]
+            );
+
+            Auth::login($user);
+
+            return redirect('/'); // or wherever you want
+        } catch (\Exception $e) {
+            return redirect('/login')->withErrors(['msg' => 'Google login failed: ' . $e->getMessage()]);
+        }
+    }
+
 }
