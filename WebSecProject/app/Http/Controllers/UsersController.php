@@ -38,6 +38,8 @@ class UsersController extends Controller
         $user->name = $request->name;
         $user->email = $request->email;
         $user->password = bcrypt($request->password);  
+        // Automatically verify email
+        $user->email_verified_at = now();
         $user->save();
 
         // Assign default user role
@@ -96,37 +98,27 @@ class UsersController extends Controller
         return view('users.profile', compact('user'));
     }
 
-    public function redirectToGoogle()
+    public function resendVerification(Request $request)
     {
-        return Socialite::driver('google')->redirect();
-    }
+        if ($request->user()->hasVerifiedEmail()) {
+            return redirect()->route('home')->with('status', 'Email already verified.');
+        }
 
-    public function handleGoogleCallback()
-    {
         try {
-            $googleUser = Socialite::driver('google')->stateless()->user();
-
-            // Find or create user
-            $user = User::firstOrCreate(
-                ['email' => $googleUser->getEmail()],
-                [
-                    'name' => $googleUser->getName(),
-                    'email_verified_at' => now(),
-                    'google_id' => $googleUser->getId(),
-                    'google_token' => $googleUser->token,
-                    'google_refresh_token' => $googleUser->refreshToken,
-                    'password' => bcrypt(uniqid()), // random password
-                ]
-            );
-
-            Auth::login($user);
-
-            return redirect('/'); // or wherever you want
+            $request->user()->sendEmailVerificationNotification();
+            $request->user()->update(['verification_sent_at' => now()]);
+            
+            return back()->with('status', 'Verification link has been resent to your email address.');
         } catch (\Exception $e) {
-            return redirect('/login')->withErrors(['msg' => 'Google login failed: ' . $e->getMessage()]);
+            Log::error('Failed to send verification email', [
+                'user_id' => $request->user()->id,
+                'email' => $request->user()->email,
+                'error' => $e->getMessage()
+            ]);
+            
+            return back()->with('error', 'Failed to send verification email. Please try again later or contact support.');
         }
     }
-
 
     public function index()
     {
