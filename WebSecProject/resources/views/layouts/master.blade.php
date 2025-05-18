@@ -129,6 +129,16 @@
                     <ul class="navbar-nav">
                         @auth
                             <li class="nav-item">
+                                <a class="nav-link" href="{{ route('credits.show') }}">
+                                    <i class="fas fa-wallet me-1"></i>My Credit
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('orders.index') }}">
+                                    <i class="fas fa-shopping-bag me-1"></i>My Orders
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link" href="{{ route('profile') }}">
                                     <i class="fas fa-user me-1"></i>{{ auth()->user()->name }}
                                 </a>

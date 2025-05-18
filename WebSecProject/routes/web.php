@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\CreditController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -37,6 +39,26 @@ Route::resource('products', ProductController::class);
 Route::post('/products/{product}/comments', [CommentController::class, 'store'])->name('comments.store');
 Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
+// Order routes
+Route::post('/products/{product}/purchase', [OrderController::class, 'store'])->name('orders.store');
+Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+Route::get('/orders/checkout', [OrderController::class, 'checkout'])->name('orders.checkout');
+Route::post('/orders/checkout', [OrderController::class, 'processCheckout'])->name('orders.process-checkout');
+
+// Credit routes
+Route::get('/credit', [CreditController::class, 'show'])->name('credits.show');
+Route::get('/credits', [CreditController::class, 'index'])->name('credits.index');
+Route::get('/credits/{user}/edit', [CreditController::class, 'edit'])->name('credits.edit');
+Route::put('/credits/{user}', [CreditController::class, 'update'])->name('credits.update');
+Route::post('/credits/{user}/add', [CreditController::class, 'add'])->name('credits.add');
 
 Route::get('/auth/google', [UsersController::class, 'redirectToGoogle'])->name('login_with_google');
 Route::get('/auth/google/callback', [UsersController::class, 'handleGoogleCallback']);
+
+Route::middleware(['auth'])->group(function () {
+    // ... existing code ...
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/checkout', [OrderController::class, 'checkout'])->name('orders.checkout');
+    Route::post('/orders/checkout', [OrderController::class, 'processCheckout'])->name('orders.process-checkout');
+    // ... existing code ...
+});
