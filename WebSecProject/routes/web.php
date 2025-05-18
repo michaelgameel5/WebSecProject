@@ -167,5 +167,3 @@ Route::get('/setup-roles', function () {
 })->middleware('auth');
 
 
-Route::get('/auth/google', [UsersController::class, 'redirectToGoogle'])->name('login_with_google');
-Route::get('/auth/google/callback', [UsersController::class, 'handleGoogleCallback']);
