@@ -2,6 +2,20 @@
 @section('title', $product->name)
 @section('content')
 <div class="container mt-4">
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="row">
         <div class="col-md-6">
             @if($product->photo)
@@ -20,18 +34,42 @@
             <p><strong>Description:</strong></p>
             <p>{{ $product->description }}</p>
             
-            <div class="mt-4">
-                <a href="{{ route('products.edit', $product) }}" class="btn btn-warning">
-                    <i class="fas fa-edit me-1"></i>Edit
-                </a>
-                <form action="{{ route('products.destroy', $product) }}" method="POST" class="d-inline">
+            @auth
+                <form action="{{ route('cart.add_item') }}" method="POST" class="mb-4">
                     @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this product?')">
-                        <i class="fas fa-trash-alt me-1"></i>Delete
-                    </button>
+                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <label for="quantity" class="form-label">Quantity:</label>
+                            <input type="number" name="quantity" id="quantity" class="form-control" value="1" min="1" max="{{ $product->stock }}" style="width: 80px">
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-shopping-cart me-1"></i>Add to Cart
+                            </button>
+                        </div>
+                    </div>
                 </form>
-            </div>
+            @else
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>Please <a href="{{ route('login') }}" class="alert-link">login</a> to purchase this product.
+                </div>
+            @endauth
+            
+            @role('employee')
+                <div class="mt-4">
+                    <a href="{{ route('products.edit', $product) }}" class="btn btn-warning">
+                        <i class="fas fa-edit me-1"></i>Edit
+                    </a>
+                    <form action="{{ route('products.destroy', $product) }}" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this product?')">
+                            <i class="fas fa-trash-alt me-1"></i>Delete
+                        </button>
+                    </form>
+                </div>
+            @endrole
         </div>
     </div>
 
@@ -58,18 +96,6 @@
                     <i class="fas fa-info-circle me-2"></i>Please <a href="{{ route('login') }}" class="alert-link">login</a> to leave a comment.
                 </div>
             @endauth
-
-            @if(session('success'))
-                <div class="alert alert-success">
-                    <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
-                </div>
-            @endif
 
             <div class="comments-list">
                 @forelse($product->comments as $comment)

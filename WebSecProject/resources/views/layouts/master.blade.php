@@ -121,10 +121,31 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('products.index') }}">
+                            <a class="nav-link {{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index') }}">
                                 <i class="fas fa-box me-1"></i>Products
                             </a>
                         </li>
+                        @role('employee')
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
+                                    <i class="fas fa-users me-1"></i>Users
+                                </a>
+                            </li>
+                        @endrole
+                        @auth
+                            @unlessrole('employee')
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('cart.index') }}">
+                                        <i class="fas fa-shopping-cart me-1"></i>Cart
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('purchases.index') }}">
+                                        <i class="fas fa-history me-1"></i>Purchase History
+                                    </a>
+                                </li>
+                            @endunlessrole
+                        @endauth
                     </ul>
                     <ul class="navbar-nav">
                         @auth

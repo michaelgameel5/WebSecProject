@@ -15,6 +15,13 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('products.index') }}">Products</a>
             </li>
+            @auth
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('cart.index') }}">
+                        <i class="fas fa-shopping-cart"></i> Cart
+                    </a>
+                </li>
+            @endauth
         </ul>
         <ul class="navbar-nav">
             @auth

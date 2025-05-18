@@ -5,30 +5,28 @@ use Illuminate\Support\Facades\Auth;
 use DB;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Auth\Events\Registered;
 use App\Http\Controllers\Web\Artisan;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerificationEmail;
 use Carbon\Carbon;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Log;
 
 class UsersController extends Controller
 {
     use ValidatesRequests;
 
-
     public function register(Request $request) {
         return view('users.register');
-        }
+    }
 
     public function doRegister(Request $request) {
-
         $this->validate($request, [
             'name' => ['required', 'string', 'min:5'],
             'email' => ['required', 'email', 'unique:users'],
@@ -36,18 +34,15 @@ class UsersController extends Controller
             Password::min(8)->numbers()->letters()->mixedCase()->symbols()]
         ]);
 
-
         $user = new User();
         $user->name = $request->name;
         $user->email = $request->email;
         $user->password = bcrypt($request->password);  
         $user->save();
 
-
-        $title = "Verification Link";
-        $token = Crypt::encryptString(json_encode(['id' => $user->id, 'email' => $user->email]));
-        $link = route("verify", ['token' => $token]);
-        Mail::to($user->email)->send(new VerificationEmail($link, $user->name));
+        // Assign default user role
+        $userRole = Role::firstOrCreate(['name' => 'user']);
+        $user->roles()->attach($userRole->id);
 
         return redirect("/");
     }
@@ -67,41 +62,34 @@ class UsersController extends Controller
     }
 
     public function login(Request $request) {
-    return view('users.login');
+        return view('users.login');
     }
 
     public function doLogin(Request $request) {
-
         $user = User::where('email', $request->email)->first();
 
         if(!$user)
             return redirect()->back()->withInput($request->input())
                 ->withErrors('No email found.');
 
-        if(!$user->email_verified_at)
-            return redirect()->back()->withInput($request->input())
-                ->withErrors('Your email is not verified.');
-
         if(!Auth::attempt(['email' => $request->email, 'password' => $request->password]))
             return redirect()->back()->withInput($request->input())->withErrors('Invalid login information.');
             $user = User::where('email', $request->email)->first();
             Auth::setUser($user);
         
-    return redirect('/');
+        return redirect('/');
     }
 
     public function doLogout(Request $request) {
-
         Auth::logout();
-
-    return redirect('/');
+        return redirect('/');
     }
 
     public function profile(Request $request, User $user = null) {
-        $user = $user ?? auth()->user();
+        $user = $user ?? Auth::user();
     
         // Authorization Check
-        if (auth()->id() !== $user?->id && !auth()->user()->hasPermissionTo('show_users')) {
+        if (Auth::id() !== $user?->id && !Auth::user()->isEmployee()) {
             abort(401);
         }
     
@@ -139,4 +127,48 @@ class UsersController extends Controller
         }
     }
 
+
+    public function index()
+    {
+        $users = \App\Models\User::whereHas('roles', function($query) {
+            $query->where('name', 'customer');
+        })->get();
+        return view('users.index', compact('users'));
+    }
+
+    public function addCredit(User $user)
+    {
+        // Logic to add credit to the user
+        // For example, you might want to show a form or directly add credit
+        return view('users.add-credit', compact('user'));
+    }
+
+    public function storeCredit(Request $request, User $user)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        // Logic to store the credit added to the user
+        // For example, you might want to update the user's credit balance
+        $user->credit += $request->amount;
+        $user->save();
+
+        return redirect()->route('users.index')->with('success', 'Credit added successfully.');
+    }
+
+    public function edit(User $user)
+    {
+        return view('users.edit', compact('user'));
+    }
+
+    public function update(Request $request, User $user)
+    {
+        $request->validate([
+            'name' => 'required|string|min:2',
+        ]);
+        $user->name = $request->name;
+        $user->save();
+        return redirect()->route('users.index')->with('success', 'User name updated successfully.');
+    }
 }

@@ -4,9 +4,11 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Products</h1>
-        <a href="{{ route('products.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-1"></i>Add New Product
-        </a>
+        @role('employee')
+            <a href="{{ route('products.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Add New Product
+            </a>
+        @endrole
     </div>
 
     @if(session('success'))
@@ -24,7 +26,9 @@
                     <th>Price</th>
                     <th>Stock</th>
                     <th>Description</th>
-                    <th>Actions</th>
+                    @role('employee')
+                        <th>Actions</th>
+                    @endrole
                 </tr>
             </thead>
             <tbody>
@@ -45,20 +49,22 @@
                         <td>${{ number_format($product->price / 100, 2) }}</td>
                         <td>{{ $product->stock }}</td>
                         <td>{{ Str::limit($product->description, 50) }}</td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <a href="{{ route('products.edit', $product) }}" class="btn btn-warning btn-sm">
-                                    <i class="fas fa-edit me-1"></i>Edit
-                                </a>
-                                <form action="{{ route('products.destroy', $product) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this product?')">
-                                        <i class="fas fa-trash-alt me-1"></i>Delete
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
+                        @role('employee')
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ route('products.edit', $product) }}" class="btn btn-warning btn-sm">
+                                        <i class="fas fa-edit me-1"></i>Edit
+                                    </a>
+                                    <form action="{{ route('products.destroy', $product) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this product?')">
+                                            <i class="fas fa-trash-alt me-1"></i>Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        @endrole
                     </tr>
                 @endforeach
             </tbody>
