@@ -57,18 +57,6 @@ class RoleAndPermissionSeeder extends Seeder
             'manage_customers',
         ]);
 
-        // Example: Assign roles to users (uncomment and adjust as needed)
-        // $user = User::where('email', 'customer@example.com')->first();
-        // if ($user) {
-        //     $user->assignRole('customer');
-        // }
-        // $employeeUser = User::where('email', 'employee@example.com')->first();
-        // if ($employeeUser) {
-        //     $employeeUser->assignRole('employee');
-        // }
-        // $adminUser = User::where('email', 'admin@example.com')->first();
-        // if ($adminUser) {
-        //     $adminUser->assignRole('admin');
-        // }
+
     }
 } 

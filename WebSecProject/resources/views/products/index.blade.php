@@ -34,7 +34,8 @@
                     <tr>
                         <td>
                             @if($product->photo)
-                                <img src="{{ Storage::url($product->photo) }}" alt="{{ $product->name }}" style="max-width: 100px;" class="rounded">
+                                <img src="{{ asset($product->photo) }}"
+                                alt="{{ $product->name }}" style="max-width: 100px;" class="rounded">
                             @else
                                 <div class="bg-light rounded p-2 text-center">
                                     <i class="fas fa-image text-muted"></i>

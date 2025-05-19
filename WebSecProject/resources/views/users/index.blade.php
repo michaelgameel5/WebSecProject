@@ -4,7 +4,7 @@
 <div class="container mt-4">
     <h1 class="mb-4">User Management</h1>
     @if(auth()->user()->hasRole('admin'))
-        <a href="{{ route('users.create') }}" class="btn btn-success mb-3">Add Employee / Support Agent / Manager</a>
+        <a href="{{ route('users.create') }}" class="btn btn-success mb-3">Add New User</a>
     @endif
     @if($users->isEmpty())
         <div class="alert alert-info">

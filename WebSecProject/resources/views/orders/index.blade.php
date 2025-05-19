@@ -8,9 +8,9 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Order History</h5>
-                    @if($orders->whereNull('checkout_at')->count() > 0)
+                    @if($orders->where('checkout', false)->count() > 0)
                         <a href="{{ route('orders.checkout') }}" class="btn btn-primary">
-                            Checkout ({{ $orders->whereNull('checkout_at')->count() }} items)
+                            Checkout ({{ $orders->where('checkout', false)->count() }} items)
                         </a>
                     @endif
                 </div>
@@ -40,7 +40,7 @@
                                             <td>${{ number_format($order->price_at_purchase * $order->quantity, 2) }}</td>
                                             <td>{{ $order->created_at->format('M d, Y H:i') }}</td>
                                             <td>
-                                                @if($order->checkout_at)
+                                                @if($order->checkout)
                                                     <span class="badge bg-success">Completed</span>
                                                 @else
                                                     <span class="badge bg-warning">Pending</span>
@@ -57,4 +57,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

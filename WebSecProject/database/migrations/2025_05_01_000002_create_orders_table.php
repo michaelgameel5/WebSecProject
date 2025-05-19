@@ -15,6 +15,7 @@ return new class extends Migration
             $table->unsignedBigInteger('product_id');
             $table->integer('quantity')->default(1);
             $table->decimal('price_at_purchase', 10, 2);
+            $table->boolean('checkout')->default(false);
             $table->timestamp('created_at')->nullable();
             $table->timestamp('updated_at')->nullable();
 

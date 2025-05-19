@@ -167,7 +167,14 @@ class UsersController extends Controller
         if (!$authUser->can('manage_users')) {
             abort(403, 'Unauthorized');
         }
-        return view('users.edit', compact('user'));
+        
+        // Get all available roles
+        $roles = Role::pluck('name')->toArray();
+        
+        // Get the user's current role (if any)
+        $userRole = $user->roles->first() ? $user->roles->first()->name : null;
+        
+        return view('users.edit', compact('user', 'roles', 'userRole'));
     }
 
     public function update(Request $request, User $user)
@@ -176,11 +183,20 @@ class UsersController extends Controller
         if (!$authUser->can('manage_users')) {
             abort(403, 'Unauthorized');
         }
+        
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
+            'role' => 'required|string',
         ]);
-        $user->update($validated);
+        
+        $user->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+        ]);
+        
+        $user->syncRoles([$validated['role']]);
+        
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
 
@@ -226,7 +242,11 @@ class UsersController extends Controller
         if (!$authUser->hasRole('admin')) {
             abort(403, 'Unauthorized');
         }
-        $roles = ['employee', 'support agent', 'manager'];
+
+        // $roles = ['customer', 'admin', 'employee', 'support agent', 'manager'];
+        // return view('users.create', compact('roles'));
+
+        $roles = Role::pluck('name')->toArray();
         return view('users.create', compact('roles'));
     }
 
@@ -240,7 +260,7 @@ class UsersController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::min(8)->numbers()->letters()->mixedCase()->symbols()],
-            'role' => 'required|in:employee,support agent,manager',
+            'role' => 'required|in:admin,customer,employee,support agent,manager',
         ]);
         $user = User::create([
             'name' => $validated['name'],

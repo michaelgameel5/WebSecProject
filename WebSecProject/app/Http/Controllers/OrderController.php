@@ -21,34 +21,21 @@ class OrderController extends Controller
             return redirect()->back()->with('error', 'Not enough stock available.');
         }
 
-        $totalCost = ($product->price / 100) * $request->quantity;
         $user = Auth::user();
 
-        // Check if user has enough credit
-        if ($user->credit < $totalCost) {
-            return redirect()->back()->with('error', 'Not enough credit. You need $' . number_format($totalCost, 2) . ' but have $' . number_format($user->credit, 2));
-        }
-
-        // Create the order
+        // Create the order with checkout=false (add to cart)
         $order = new Order([
             'user_id' => $user->id,
             'product_id' => $product->id,
             'quantity' => $request->quantity,
             'price_at_purchase' => $product->price / 100, // Convert cents to dollars
+            'checkout' => false
         ]);
-
-        // Update product stock
-        $product->stock -= $request->quantity;
-        $product->save();
-
-        // Deduct credit from user
-        $user->credit -= $totalCost;
-        $user->save();
 
         $order->save();
 
-        return redirect()->route('products.show', $product)
-            ->with('success', 'Product purchased successfully! $' . number_format($totalCost, 2) . ' has been deducted from your credit.');
+        return redirect()->route('orders.index')
+            ->with('success', 'Product added to cart successfully!');
     }
 
     public function index()
@@ -66,7 +53,7 @@ class OrderController extends Controller
         $user = Auth::user();
         $orders = Order::with(['product'])
             ->where('user_id', $user->id)
-            ->whereNull('checkout_at')
+            ->where('checkout', false)
             ->get();
 
         if ($orders->isEmpty()) {
@@ -89,7 +76,7 @@ class OrderController extends Controller
         try {
             $orders = Order::with(['product'])
                 ->where('user_id', $user->id)
-                ->whereNull('checkout_at')
+                ->where('checkout', false)
                 ->get();
 
             if ($orders->isEmpty()) {
@@ -106,9 +93,9 @@ class OrderController extends Controller
                     ->with('error', 'Insufficient credit to complete the purchase.');
             }
 
-            // Update orders with checkout timestamp
+            // Update orders with checkout = true
             foreach ($orders as $order) {
-                $order->checkout_at = now();
+                $order->checkout = true;
                 $order->save();
             }
 
@@ -126,4 +113,4 @@ class OrderController extends Controller
                 ->with('error', 'An error occurred during checkout. Please try again.');
         }
     }
-} 
+}

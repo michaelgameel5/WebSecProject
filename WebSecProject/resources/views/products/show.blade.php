@@ -76,7 +76,6 @@
             <h3><i class="fas fa-comments me-2"></i>Comments</h3>
             
             @auth
-                @can('comment')
                 <form action="{{ route('comments.store', $product) }}" method="POST" class="mb-4">
                     @csrf
                     <div class="form-group">
@@ -89,7 +88,6 @@
                         <i class="fas fa-paper-plane me-1"></i>Post Comment
                     </button>
                 </form>
-                @endcan
             @else
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle me-2"></i>Please <a href="{{ route('login') }}" class="alert-link">login</a> to leave a comment.
@@ -143,4 +141,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

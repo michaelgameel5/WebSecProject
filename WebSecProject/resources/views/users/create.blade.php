@@ -2,7 +2,7 @@
 @section('title', 'Add User')
 @section('content')
 <div class="container mt-4">
-    <h1 class="mb-4">Add Employee / Support Agent / Manager</h1>
+    <h1 class="mb-4">Add => Customer - Admin - Employee - Support Agent - Manager</h1>
     <form action="{{ route('users.store') }}" method="POST">
         @csrf
         <div class="mb-3">

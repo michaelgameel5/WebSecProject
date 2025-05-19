@@ -15,7 +15,7 @@ class CommentController extends Controller
 
     public function store(Request $request, Product $product)
     {
-        if (!auth()->check() || !auth()->user()->can('comment')) {
+        if (!auth()->check()) {
             abort(403, 'Unauthorized');
         }
         $validated = $request->validate([
