@@ -136,18 +136,18 @@ class UsersController extends Controller
                 ]
             );
 
+            if ($user->roles()->count() === 0) {
+                $user->assignRole('customer');
+            }
+
             Auth::login($user);
 
-            return redirect('/'); // or wherever you want
+            return redirect('/'); 
         } catch (\Exception $e) {
             return redirect('/login')->withErrors(['msg' => 'Google login failed: ' . $e->getMessage()]);
         }
     }
 
-    /**
-     * Display a listing of users.
-     * Admins see all users, employees see only customers.
-     */
     public function index()
     {
         $user = auth()->user();
