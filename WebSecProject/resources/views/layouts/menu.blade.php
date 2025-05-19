@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Online Store</title>
+    <title>Electro Store</title>
 </head>
 <body>
 <nav class="navbar navbar-expand-sm bg-light">
     <div class="container-fluid">
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('home') }}">Online Store</a>
+                <a class="nav-link" href="{{ route('home') }}">Electro Store</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('products.index') }}">Products</a>

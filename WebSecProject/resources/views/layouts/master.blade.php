@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>@yield('title') - Online Store</title>
+        <title>@yield('title') - Electro Store</title>
         <!-- Bootstrap CSS -->
         <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
         <!-- Font Awesome -->
@@ -108,18 +108,13 @@
         <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container">
                 <a class="navbar-brand" href="{{ route('home') }}">
-                    <i class="fas fa-store me-2"></i>Online Store
+                    <i class="fas fa-store me-2"></i>Electro Store
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('home') }}">
-                                <i class="fas fa-home me-1"></i>Home
-                            </a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('products.index') }}">
                                 <i class="fas fa-box me-1"></i>Products
@@ -128,17 +123,52 @@
                     </ul>
                     <ul class="navbar-nav">
                         @auth
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('profile') }}">
-                                    <i class="fas fa-user me-1"></i>{{ auth()->user()->name }}
-                                </a>
-                            </li>
+                            @php $user = auth()->user(); @endphp
+                            @if($user->hasRole('admin') ||$user->hasRole('employee'))
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('credits.index') }}">
+                                        <i class="fas fa-wallet me-1"></i>Manage Credits
+                                    </a>
+                                </li>
+                            @elseif($user->hasRole('customer'))
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('credits.show') }}">
+                                        <i class="fas fa-wallet me-1"></i>My Credit
+                                    </a>
+                                </li>
+                            @endif
+                            @if($user->hasRole('admin') || $user->hasRole('customer'))
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('orders.index') }}">
+                                        <i class="fas fa-shopping-bag me-1"></i>My Orders
+                                    </a>
+                                </li>
+                            @endif
+                            @if($user->hasRole('admin') || $user->hasRole('employee') || $user->hasRole('support agent'))
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('users.index') }}">
+                                        <i class="fas fa-users me-1"></i>Manage Users
+                                    </a>
+                                </li>
+                            @endif
+                            @if($user->hasRole('admin'))
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('users.create') }}">
+                                        <i class="fas fa-user-plus me-1"></i>Create User
+                                    </a>
+                                </li>
+                            @endif
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('do_logout') }}">
                                     <i class="fas fa-sign-out-alt me-1"></i>Logout
                                 </a>
                             </li>
-                        @else
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('profile') }}">
+                                    <i class="fas fa-user me-1"></i>{{ $user->name }}
+                                </a>
+                            </li>
+                            @else
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('login') }}">
                                     <i class="fas fa-sign-in-alt me-1"></i>Login
@@ -167,20 +197,20 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-6">
-                        <h5>Online Store</h5>
+                        <h5>Electro Store</h5>
                         <p>Your one-stop shop for all your needs.</p>
                     </div>
                     <div class="col-md-6 text-md-end">
                         <h5>Contact Us</h5>
                         <p>
-                            <i class="fas fa-envelope me-2"></i>support@onlinestore.com<br>
-                            <i class="fas fa-phone me-2"></i>+1 234 567 890
+                            <i class="fas fa-envelope me-2"></i>support@electrostore.com<br>
+                            <i class="fas fa-phone me-2"></i>+20 1552877797
                         </p>
                     </div>
                 </div>
                 <hr class="mt-4">
                 <div class="text-center">
-                    <p class="mb-0">&copy; {{ date('Y') }} Online Store. All rights reserved.</p>
+                    <p class="mb-0">&copy; {{ date('Y') }} Electro Store. All rights reserved.</p>
                 </div>
             </div>
         </footer>

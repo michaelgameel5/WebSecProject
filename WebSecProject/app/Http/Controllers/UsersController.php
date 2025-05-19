@@ -84,10 +84,15 @@ class UsersController extends Controller
 
         if(!Auth::attempt(['email' => $request->email, 'password' => $request->password]))
             return redirect()->back()->withInput($request->input())->withErrors('Invalid login information.');
-            $user = User::where('email', $request->email)->first();
-            Auth::setUser($user);
-        
-    return redirect('/');
+        $user = User::where('email', $request->email)->first();
+        Auth::setUser($user);
+
+        // Automatically assign 'customer' role if user has no role
+        if ($user->roles()->count() === 0) {
+            $user->assignRole('customer');
+        }
+    
+        return redirect('/');
     }
 
     public function doLogout(Request $request) {
@@ -137,6 +142,133 @@ class UsersController extends Controller
         } catch (\Exception $e) {
             return redirect('/login')->withErrors(['msg' => 'Google login failed: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Display a listing of users.
+     * Admins see all users, employees see only customers.
+     */
+    public function index()
+    {
+        $user = auth()->user();
+        if ($user->can('manage_users')) {
+            $users = User::all();
+        } elseif ($user->can('manage_customers')) {
+            $users = User::role('customer')->get();
+        } else {
+            abort(403, 'Unauthorized');
+        }
+        return view('users.index', compact('users'));
+    }
+
+    public function edit(User $user)
+    {
+        $authUser = auth()->user();
+        if (!$authUser->can('manage_users')) {
+            abort(403, 'Unauthorized');
+        }
+        
+        // Get all available roles
+        $roles = Role::pluck('name')->toArray();
+        
+        // Get the user's current role (if any)
+        $userRole = $user->roles->first() ? $user->roles->first()->name : null;
+        
+        return view('users.edit', compact('user', 'roles', 'userRole'));
+    }
+
+    public function update(Request $request, User $user)
+    {
+        $authUser = auth()->user();
+        if (!$authUser->can('manage_users')) {
+            abort(403, 'Unauthorized');
+        }
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'role' => 'required|string',
+        ]);
+        
+        $user->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+        ]);
+        
+        $user->syncRoles([$validated['role']]);
+        
+        return redirect()->route('users.index')->with('success', 'User updated successfully.');
+    }
+
+    public function destroy(User $user)
+    {
+        $authUser = auth()->user();
+        if (!$authUser->can('manage_users')) {
+            abort(403, 'Unauthorized');
+        }
+        if ($authUser->id === $user->id) {
+            return redirect()->route('users.index')->with('error', 'You cannot delete your own account.');
+        }
+        $user->delete();
+        return redirect()->route('users.index')->with('success', 'User deleted successfully.');
+    }
+
+    public function showChangePasswordForm(User $user)
+    {
+        $authUser = auth()->user();
+        if (!$authUser->can('change_passwords')) {
+            abort(403, 'Unauthorized');
+        }
+        return view('users.change_password', compact('user'));
+    }
+
+    public function changePassword(Request $request, User $user)
+    {
+        $authUser = auth()->user();
+        if (!$authUser->can('change_passwords')) {
+            abort(403, 'Unauthorized');
+        }
+        $validated = $request->validate([
+            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::min(8)->numbers()->letters()->mixedCase()->symbols()]
+        ]);
+        $user->password = bcrypt($validated['password']);
+        $user->save();
+        return redirect()->route('users.index')->with('success', 'Password changed successfully.');
+    }
+
+    public function create()
+    {
+        $authUser = auth()->user();
+        if (!$authUser->hasRole('admin')) {
+            abort(403, 'Unauthorized');
+        }
+
+        // $roles = ['customer', 'admin', 'employee', 'support agent', 'manager'];
+        // return view('users.create', compact('roles'));
+
+        $roles = Role::pluck('name')->toArray();
+        return view('users.create', compact('roles'));
+    }
+
+    public function store(Request $request)
+    {
+        $authUser = auth()->user();
+        if (!$authUser->hasRole('admin')) {
+            abort(403, 'Unauthorized');
+        }
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::min(8)->numbers()->letters()->mixedCase()->symbols()],
+            'role' => 'required|in:admin,customer,employee,support agent,manager',
+        ]);
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => bcrypt($validated['password']),
+        ]);
+        $user->assignRole($validated['role']);
+        return redirect()->route('users.index')->with('success', 'User created successfully.');
     }
 
 }

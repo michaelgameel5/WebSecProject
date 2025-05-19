@@ -4,9 +4,11 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Products</h1>
+        @role('employee|admin')
         <a href="{{ route('products.create') }}" class="btn btn-primary">
             <i class="fas fa-plus me-1"></i>Add New Product
         </a>
+        @endrole
     </div>
 
     @if(session('success'))
@@ -32,7 +34,8 @@
                     <tr>
                         <td>
                             @if($product->photo)
-                                <img src="{{ Storage::url($product->photo) }}" alt="{{ $product->name }}" style="max-width: 100px;" class="rounded">
+                                <img src="{{ asset($product->photo) }}"
+                                alt="{{ $product->name }}" style="max-width: 100px;" class="rounded">
                             @else
                                 <div class="bg-light rounded p-2 text-center">
                                     <i class="fas fa-image text-muted"></i>
@@ -47,6 +50,7 @@
                         <td>{{ Str::limit($product->description, 50) }}</td>
                         <td>
                             <div class="btn-group" role="group">
+                                @role('employee|admin')
                                 <a href="{{ route('products.edit', $product) }}" class="btn btn-warning btn-sm">
                                     <i class="fas fa-edit me-1"></i>Edit
                                 </a>
@@ -57,6 +61,7 @@
                                         <i class="fas fa-trash-alt me-1"></i>Delete
                                     </button>
                                 </form>
+                                @endrole
                             </div>
                         </td>
                     </tr>

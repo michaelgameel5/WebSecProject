@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class UsersTableSeeder extends Seeder
 {
@@ -12,48 +13,64 @@ class UsersTableSeeder extends Seeder
     {
         $users = [
             [
-                'name' => 'John Doe',
-                'email' => 'john.doe@example.com',
+                'name' => 'Michael',
+                'email' => 'michael@gmail.com',
                 'email_verified_at' => now(),
-                'password' => Hash::make('password123'), // Hash the password
+                'password' => Hash::make('Test@123'), 
                 'remember_token' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
                 'google_id' => null,
                 'google_token' => null,
                 'google_refresh_token' => null,
-                'credit' => 100000.00, // Add credit field
+                'credit' => 0.00,
             ],
             [
-                'name' => 'Jane Smith',
-                'email' => 'jane.smith@example.com',
+                'name' => 'Demiana',
+                'email' => 'dodo@gmail.com',
                 'email_verified_at' => now(),
-                'password' => Hash::make('password123'),
-                'remember_token' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-                'google_id' => '1234567890',
-                'google_token' => 'abcde12345',
-                'google_refresh_token' => 'fghij67890',
-                'credit' => 200000.00, // Add credit field
-            ],
-            [
-                'name' => 'Alice Johnson',
-                'email' => 'alice.johnson@example.com',
-                'email_verified_at' => now(),
-                'password' => Hash::make('password123'),
+                'password' => Hash::make('Dodo@123'), 
                 'remember_token' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
                 'google_id' => null,
                 'google_token' => null,
                 'google_refresh_token' => null,
-                'credit' => 150000.00, // Add credit field
+                'credit' => 0.00,
+            ],
+            [
+                'name' => 'Mina',
+                'email' => 'mina@gmail.com',
+                'email_verified_at' => now(),
+                'password' => Hash::make('Mina@123'), 
+                'remember_token' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+                'google_id' => null,
+                'google_token' => null,
+                'google_refresh_token' => null,
+                'credit' => 16706.00,
             ],
         ];
 
         foreach ($users as $user) {
             User::create($user);
+        }
+        
+        // Assign roles to users
+        $michaelUser = User::where('email', 'michael@gmail.com')->first();
+        if ($michaelUser) {
+            $michaelUser->assignRole('admin');
+        }
+        
+        $demianaUser = User::where('email', 'dodo@gmail.com')->first();
+        if ($demianaUser) {
+            $demianaUser->assignRole('employee');
+        }
+        
+        $minaUser = User::where('email', 'mina@gmail.com')->first();
+        if ($minaUser) {
+            $minaUser->assignRole('customer');
         }
     }
 }
