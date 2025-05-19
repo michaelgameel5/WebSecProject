@@ -128,21 +128,46 @@
                     </ul>
                     <ul class="navbar-nav">
                         @auth
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('credits.show') }}">
-                                    <i class="fas fa-wallet me-1"></i>My Credit
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('orders.index') }}">
-                                    <i class="fas fa-shopping-bag me-1"></i>My Orders
-                                </a>
-                            </li>
+                            @php $user = auth()->user(); @endphp
+                            @if($user->hasRole('admin') ||$user->hasRole('employee'))
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('credits.index') }}">
+                                        <i class="fas fa-wallet me-1"></i>Manage Credits
+                                    </a>
+                                </li>
+                            @elseif($user->hasRole('customer'))
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('credits.show') }}">
+                                        <i class="fas fa-wallet me-1"></i>My Credit
+                                    </a>
+                                </li>
+                            @endif
+                            @if($user->hasRole('admin') || $user->hasRole('customer'))
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('orders.index') }}">
+                                        <i class="fas fa-shopping-bag me-1"></i>My Orders
+                                    </a>
+                                </li>
+                            @endif
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('profile') }}">
-                                    <i class="fas fa-user me-1"></i>{{ auth()->user()->name }}
+                                    <i class="fas fa-user me-1"></i>{{ $user->name }}
                                 </a>
                             </li>
+                            @if($user->hasRole('admin') || $user->hasRole('employee') || $user->hasRole('support agent'))
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('users.index') }}">
+                                        <i class="fas fa-users me-1"></i>Manage Users
+                                    </a>
+                                </li>
+                            @endif
+                            @if($user->hasRole('admin'))
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('users.create') }}">
+                                        <i class="fas fa-user-plus me-1"></i>Create User
+                                    </a>
+                                </li>
+                            @endif
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('do_logout') }}">
                                     <i class="fas fa-sign-out-alt me-1"></i>Logout

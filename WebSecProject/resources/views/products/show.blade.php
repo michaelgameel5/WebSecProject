@@ -22,6 +22,7 @@
             
             @auth
                 @if($product->stock > 0)
+                    @role('customer')
                     <form action="{{ route('orders.store', $product) }}" method="POST" class="mt-4">
                         @csrf
                         <div class="row align-items-end">
@@ -40,6 +41,7 @@
                             </div>
                         </div>
                     </form>
+                    @endrole
                 @else
                     <div class="alert alert-warning mt-4">
                         <i class="fas fa-exclamation-triangle me-2"></i>This product is out of stock.
@@ -52,6 +54,7 @@
             @endauth
             
             <div class="mt-4">
+                @role('employee|admin')
                 <a href="{{ route('products.edit', $product) }}" class="btn btn-warning">
                     <i class="fas fa-edit me-1"></i>Edit
                 </a>
@@ -62,6 +65,7 @@
                         <i class="fas fa-trash-alt me-1"></i>Delete
                     </button>
                 </form>
+                @endrole
             </div>
         </div>
     </div>
@@ -72,6 +76,7 @@
             <h3><i class="fas fa-comments me-2"></i>Comments</h3>
             
             @auth
+                @can('comment')
                 <form action="{{ route('comments.store', $product) }}" method="POST" class="mb-4">
                     @csrf
                     <div class="form-group">
@@ -84,6 +89,7 @@
                         <i class="fas fa-paper-plane me-1"></i>Post Comment
                     </button>
                 </form>
+                @endcan
             @else
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle me-2"></i>Please <a href="{{ route('login') }}" class="alert-link">login</a> to leave a comment.
@@ -116,13 +122,15 @@
                             </div>
                             <p class="card-text">{{ $comment->content }}</p>
                             @if(auth()->check() && auth()->id() === $comment->user_id)
-                                <form action="{{ route('comments.destroy', $comment) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this comment?')">
-                                        <i class="fas fa-trash-alt me-1"></i>Delete
-                                    </button>
-                                </form>
+                                @can('manage_comments')
+                                    <form action="{{ route('comments.destroy', $comment) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this comment?')">
+                                            <i class="fas fa-trash-alt me-1"></i>Delete
+                                        </button>
+                                    </form>
+                                @endcan
                             @endif
                         </div>
                     </div>

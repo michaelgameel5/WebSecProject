@@ -25,9 +25,9 @@
                                 <span class="text-muted">{{ $user->email }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span><i class="fas fa-user-tag me-2"></i>Role</span>
-                                <span class="badge bg-{{ $user->is_employee ? 'primary' : 'success' }} rounded-pill">
-                                    {{ $user->is_employee ? 'Employee' : 'Customer' }}
+                                <span><i class="fas fa-user-tag me-2"></i>Role(s)</span>
+                                <span class="badge bg-primary rounded-pill">
+                                    {{ implode(', ', $user->getRoleNames()->toArray()) }}
                                 </span>
                             </li>
                         </ul>
@@ -36,10 +36,12 @@
                     <div class="mb-4">
                         <h5 class="card-title">Account Information</h5>
                         <ul class="list-group list-group-flush">
+                            @if($user->hasRole('customer'))
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <span><i class="fas fa-wallet me-2"></i>Credit Balance</span>
                                 <span class="text-muted">${{ number_format($user->credit, 2) }}</span>
                             </li>
+                            @endif
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <span><i class="fas fa-calendar-alt me-2"></i>Member Since</span>
                                 <span class="text-muted">{{ $user->created_at->format('M d, Y') }}</span>

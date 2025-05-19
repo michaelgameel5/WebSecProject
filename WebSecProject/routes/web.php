@@ -60,5 +60,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/checkout', [OrderController::class, 'checkout'])->name('orders.checkout');
     Route::post('/orders/checkout', [OrderController::class, 'processCheckout'])->name('orders.process-checkout');
+    Route::get('/users', [UsersController::class, 'index'])->name('users.index');
+    Route::get('/users/{user}/edit', [UsersController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [UsersController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('users.destroy');
+    Route::get('/users/{user}/change-password', [UsersController::class, 'showChangePasswordForm'])->name('users.change_password_form');
+    Route::post('/users/{user}/change-password', [UsersController::class, 'changePassword'])->name('users.change_password');
+    Route::get('/users/create', [UsersController::class, 'create'])->name('users.create');
+    Route::post('/users', [UsersController::class, 'store'])->name('users.store');
     // ... existing code ...
 });
