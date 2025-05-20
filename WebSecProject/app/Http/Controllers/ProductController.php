@@ -13,9 +13,17 @@ class ProductController extends Controller
         // Removed all middleware usage
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::all();
+        $query = Product::query();
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+        if ($request->filled('sort') && in_array($request->sort, ['price_asc', 'price_desc'])) {
+            $direction = $request->sort === 'price_asc' ? 'asc' : 'desc';
+            $query->orderBy('price', $direction);
+        }
+        $products = $query->get();
         return view('products.index', compact('products'));
     }
 
