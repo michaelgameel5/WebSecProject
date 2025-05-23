@@ -8,13 +8,18 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 
 class UsersController extends Controller {
+    
     public function login(Request $request) {
         if(!Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             return response()->json(['error' => 'Invalid login info.'], 401);
         }
 
         $user = User::where('email', $request->email)->select('id', 'name', 'email')->first();
-        return response()->json(['user'=>$user->getAttributes()]);
+        $token = $user->createToken('app');
+        return response()->json(['token'=>$token->accessToken, 'user'=>$user->getAttributes()]);
+
+        // php artisan passport:client --personal --name="WebSec Personal Access Client" --no-interaction
+    
     }    
 
     public function users(Request $request) {
@@ -23,7 +28,8 @@ class UsersController extends Controller {
     }
 
 
-    public function logout(Request $request) { }
+    public function logout(Request $request) { 
+        auth()->user()->token()->revoke();
+    }
     
-
     }
