@@ -5,7 +5,7 @@
     <div class="row">
         <div class="col-md-6">
             @if($product->photo)
-                <img src="{{ Storage::url($product->photo) }}" alt="{{ $product->name }}" class="img-fluid rounded shadow">
+                <img src="{{ asset($product->photo) }}" alt="{{ $product->name }}" class="img-fluid rounded shadow">
             @else
                 <div class="bg-light rounded p-5 text-center shadow">
                     <i class="fas fa-image fa-3x text-muted"></i>

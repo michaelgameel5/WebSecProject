@@ -41,7 +41,7 @@
             <div class="col">
                 <div class="card h-100 shadow-sm border-0">
                     @if($product->photo)
-                        <img src="{{ Storage::url($product->photo) }}" alt="{{ $product->name }}" class="card-img-top object-fit-cover" style="height: 200px; width: 100%;">
+                        <img src="{{ asset($product->photo) }}" alt="{{ $product->name }}" class="card-img-top object-fit-cover" style="height: 200px; width: 100%;">
                     @else
                         <div class="d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
                             <i class="fas fa-image fa-3x text-muted"></i>
@@ -203,4 +203,4 @@
         transform: none;
     }
 </style>
-@endsection 
+@endsection
